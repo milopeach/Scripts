@@ -1,4 +1,4 @@
-package com.peach.os.scripts.firemaker;
+package com.peach.os.scripts.firemaker.util;
 
 import org.powerbot.script.rt4.ClientAccessor;
 import org.powerbot.script.rt4.ClientContext;

@@ -1,7 +1,9 @@
-package com.peach.os.scripts.firemaker;
+package com.peach.os.scripts.firemaker.util;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+import org.powerbot.script.rt4.ClientContext;
 
 import com.peach.os.items.Log;
 
@@ -30,14 +32,17 @@ public class LogManager {
 		return this.logs;
 	}
 	
+	public boolean setLogs(Queue<Log.Normal> logs) {
+		return (this.logs = logs) != null;
+	}
+	
 	public int getCurrentBankCount() {
 		return this.cLogBank;
 	}
 	
 	public boolean setCurrentBankCount(int i) {
-		if (this.cLog == null || i < 0) {
-			logDepleted();
-			return false;
+		if (this.cLog == null || i <= 0) {
+			return logDepleted();
 		}
 		this.cLogBank = i;
 		return true;
@@ -56,9 +61,8 @@ public class LogManager {
 	}
 	
 	public boolean setNextBankCount(int i) {
-		if (this.nLog == null || i < 0) {
-			logDepleted();
-			return false;
+		if (this.nLog == null || i <= 0) {
+			return logDepleted();
 		}
 		this.nLogBank = i;
 		return true;
@@ -79,15 +83,35 @@ public class LogManager {
 	}
 	
 	public Log.Normal getNextLog() {
-		if (!logs.isEmpty() && this.nLog == null)
+		if (!logs.isEmpty())
 			this.nLog = logs.peek();
+		if (this.nLog == null)
+			this.nLog = this.cLog;
 		return this.nLog;
 	}
 	
 	//TEMP: Call this when log counts get modified to, or below, 0.
-	public void logDepleted() {
+	public boolean logDepleted() {
+		if (this.logs.isEmpty())
+			return false;
 		this.cLog = logs.poll();
-		this.nLog = logs.peek(); //Could be null.
+		if (!this.logs.isEmpty())
+			this.nLog = logs.peek();
+		else
+			this.nLog = cLog;
+		return true;
+	}
+	
+	public boolean update(ClientContext ctx) {
+		if (this.cLog != null) {
+			getInstance().setCurrentBankCount(ctx.bank.select().id(getCurrentLog().id()).count(true));
+			getInstance().setCurrentInvCount(ctx.inventory.select().id(getCurrentLog().id()).count());
+		}
+		if (this.nLog != null) {
+			getInstance().setNextBankCount(ctx.bank.select().id(getNextLog().id()).count(true));
+			getInstance().setNextInvCount(ctx.inventory.select().id(getNextLog().id()).count());
+		}
+		return true;
 	}
 	
 }

@@ -8,6 +8,7 @@ import org.powerbot.script.rt4.ClientContext;
 import com.peach.os.items.Log;
 import com.peach.os.scripts.firemaker.*;
 import com.peach.os.scripts.firemaker.trail.Trail;
+import com.peach.os.scripts.firemaker.util.Task;
 
 public class Burn extends Task {
 	

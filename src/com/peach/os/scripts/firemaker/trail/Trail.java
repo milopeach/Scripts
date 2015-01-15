@@ -3,6 +3,7 @@ package com.peach.os.scripts.firemaker.trail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.powerbot.script.Locatable;
 import org.powerbot.script.Tile;
 
 import com.peach.os.scripts.firemaker.trail.TrailNode;
@@ -81,6 +82,15 @@ public class Trail implements TrailBase {
 	
 	public boolean containsNode(TrailNode n) {
 		return trail.contains(n);
+	}
+	
+	public boolean refine(Locatable l) {
+		//TODO: Everything.
+		//This method will alter the current Trail object instance to provide a shorter,
+		//more refined, trail that has an end tile closer to the starting point of the locatable(player)
+		//and a start point (x) positions away. (Based on the length specified in the future settings)
+		//TEMP Need to define the closest point from the locatable and work outwards from there.
+		return false;
 	}
 	
 	@Override

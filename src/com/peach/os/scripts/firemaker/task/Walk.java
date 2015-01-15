@@ -9,9 +9,9 @@ import org.powerbot.script.rt4.ClientContext;
 import org.powerbot.script.rt4.GameObject;
 import org.powerbot.script.rt4.TilePath;
 
-import com.peach.os.scripts.firemaker.Task;
 import com.peach.os.scripts.firemaker.TrailBlazer;
 import com.peach.os.scripts.firemaker.trail.Trail;
+import com.peach.os.scripts.firemaker.util.Task;
 
 public class Walk extends Task {
 

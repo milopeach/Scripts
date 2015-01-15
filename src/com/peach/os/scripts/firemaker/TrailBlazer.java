@@ -1,5 +1,6 @@
 package com.peach.os.scripts.firemaker;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.powerbot.script.Locatable;
 import org.powerbot.script.PaintListener;
 import org.powerbot.script.PollingScript;
 import org.powerbot.script.Script;
@@ -26,6 +28,8 @@ import com.peach.os.items.Log;
 import com.peach.os.scripts.firemaker.task.*;
 import com.peach.os.scripts.firemaker.trail.Trail;
 import com.peach.os.scripts.firemaker.trail.TrailNode;
+import com.peach.os.scripts.firemaker.util.LogManager;
+import com.peach.os.scripts.firemaker.util.Task;
 
 /*
  * Trail Blazer for Oldschool
@@ -39,14 +43,14 @@ import com.peach.os.scripts.firemaker.trail.TrailNode;
 
 public class TrailBlazer extends PollingScript<ClientContext> implements PaintListener, MouseListener {
 
+	private LogManager logManager = null;
 	private boolean manualTrails = false;
 	
 	private List<Task> tasks = new ArrayList<Task>();
 	private List<Trail> trails = new ArrayList<Trail>();
 	
 	private Trail currentTrail = null;
-	
-	private LogManager logManager = null;
+	private Trail bestTrail = null;
 	
 	@Override
 	public void start() {
@@ -62,7 +66,7 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 			this.currentTrail = findClosestTrail(ctx.players.local().tile());
 		}
 		if (this.tasks.size() == 0)
-			this.tasks.addAll(Arrays.asList(new Walk(ctx), new Bank(ctx), new Burn(ctx)));
+			this.tasks.addAll(Arrays.asList(new Bank(ctx)));//new Walk(ctx), new Bank(ctx), new Burn(ctx)));
 	}
 	
 	@Override
@@ -79,6 +83,23 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 		Graphics2D g = (Graphics2D) paint;
 		g.setRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF));
 		
+	     g.setColor(new Color(0, 0, 0, 195));
+	     g.fillRect(4, 5, 185, 199);
+	     //g.fillRect(6, 344, 507, 114);
+		
+	     g.setStroke(new BasicStroke(1));
+	     g.setColor(new Color(255, 255, 255));
+	     g.drawRect(4, 5, 185, 199);
+	     //g.drawRect(6, 344, 507, 114);
+
+		
+		if (logManager != null) {
+			g.drawString("Log Count(current/bank): " + logManager.getCurrentBankCount(), 5, 20);
+			g.drawString("Log Count(current/inv): " + logManager.getCurrentInvCount(), 5, 30);
+			g.drawString("Log Count(next/bank): " + logManager.getNextBankCount(), 5, 40);
+			g.drawString("Log Count(next/inv): " + logManager.getNextInvCount(), 5, 50);
+		}
+		
 		if (currentTrail != null) {
 			g.setColor(Color.ORANGE);
 			for (TrailNode n : currentTrail.getNodes()) {
@@ -88,16 +109,6 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 				}
 			}
 		}
-		
-		/*g.setColor(Color.WHITE);
-		for (Trail t : trails) {
-			for (TrailNode n : t.getNodes()) {
-				TileMatrix m = n.tile().matrix(ctx);
-				if (m.inViewport()) {
-					g.drawPolygon(m.getBounds());
-				}
-			}
-		}*/
 	}
 
 	@Override
@@ -118,11 +129,11 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 		}
 	}
 	
-	/** Returns a list of all possible [code]Trail[/code]'s in the loaded region\n
+	/** Returns a list of all possible <code>Trail</code>'s in the loaded region\n
 	 *  with a specified minimum length.
 	 * 
 	 * @param minTrailLength the minimum length for a valid trail.
-	 * @return a list of [code]Trail[/code]'s in the loaded region.
+	 * @return a list of <code>Trail</code>'s in the loaded region.
 	 */
 	private List<Trail> load(int minTrailLength) {
 		List<Trail> l = new ArrayList<Trail>();
@@ -151,6 +162,7 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 		return findClosestTrail(new TrailNode(ctx, t.x() - b.x(), t.y() - b.y()));
 	}
 	
+	//TODO Add a method that gets the next closest trail that isnt 't'. closestTrail(TrailNode cn, Trail t)
 	private Trail findClosestTrail(TrailNode cn) {
 		Set<TrailNode> c = new HashSet<TrailNode>();
 		Queue<TrailNode> u = new LinkedList<TrailNode>();
@@ -159,9 +171,9 @@ public class TrailBlazer extends PollingScript<ClientContext> implements PaintLi
 		while(!u.isEmpty()) {
 			cn = u.poll();
 			//If t contains a trail, return the trail.
-			for (Trail t : this.trails) { 
-				if (t.containsNode(cn))
-					return t; //Return closest trail
+			for (Trail t1 : this.trails) {
+				if (t1.containsNode(cn))
+					return t1; //Return closest trail
 			}
 			//Each node has only 4 possible neighbouring nodes (on the x and y planes).			
 			for (TrailNode n : getValidNeighbours(cn, c)) {
